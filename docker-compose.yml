@@ -13,3 +13,19 @@ services:
       - .env
     environment:
       - NODE_ENV=production
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: hipra-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: hipra_db
+    volumes:
+      - hipra_db_data:/var/lib/mysql
+    # No cal obrir ports cap enfora, l'app s'hi connecta internament
+    
+volumes:
+  hipra_db_data:
