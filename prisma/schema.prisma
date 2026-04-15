@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Worker {
+  id           Int             @id @default(autoincrement())
+  email        String          @unique
+  name         String?
+  token        String          @unique // unique secure token for QR access
+  hasAnswered  Boolean         @default(false)
+  answeredAt   DateTime?
+  response     SurveyResponse?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model SurveyResponse {
+  id                Int      @id @default(autoincrement())
+  worker            Worker   @relation(fields: [workerId], references: [id])
+  workerId          Int      @unique
+  
+  // Storing each factor score (1-10 depends on factor)
+  factor1           Int
+  factor2           Int
+  factor3           Int
+  factor4           Int
+  factor5           Int
+  factor6           Int
+  factor7           Int
+  factor8           Int
+  factor9           Int
+  factor10          Int
+  factor11          Int
+  factor12          Int
+  factor13          Int
+  factor14          Int
+  factor15          Int
+  
+  totalScore        Int
+  professionalGroup String   // e.g., "GP 1"
+  
+  createdAt         DateTime @default(now())
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Config {
+  id    Int    @id @default(1)
+  key   String @unique
+  value String
+}
