@@ -21,6 +21,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Resultats', icon: FileText, path: '/admin/results' },
   ];
 
+  if (pathname === '/admin/login') {
+    return <div className="min-h-screen bg-brand-bg">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-brand-bg flex">
       {/* Sidebar */}
