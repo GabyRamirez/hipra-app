@@ -85,7 +85,7 @@ async function sendSurveyEmail(emailTarget: string, name: string, link: string) 
          'Content-Type': 'application/json',
        },
        body: JSON.stringify({
-         sender: { name: "La Intersindical", email: "no-reply@lainter.cat" },
+         sender: { name: "La Intersindical", email: process.env.BREVO_SENDER_EMAIL || "informatica@intersindical-csc.cat" },
          to: [{ email: emailTarget, name }],
          subject: "Avaluació de Lloc de Treball | Hipra",
          htmlContent: `
@@ -107,6 +107,11 @@ async function sendSurveyEmail(emailTarget: string, name: string, link: string) 
          `,
        }),
      });
+
+     if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[sendSurveyEmail] Brevo API rebutja la petició:', response.status, errorText);
+     }
 
      return { success: response.ok };
   } catch (err) {

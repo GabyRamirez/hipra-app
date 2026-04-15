@@ -35,7 +35,7 @@ export async function POST() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            sender: { name: "La Intersindical", email: "no-reply@lainter.cat" },
+            sender: { name: "La Intersindical", email: process.env.BREVO_SENDER_EMAIL || "informatica@intersindical-csc.cat" },
             to: [{ email: worker.email, name: worker.name || 'Treballador/a' }],
             subject: "Invitació a l'Avaluació de Lloc de Treball | Hipra",
             htmlContent: `
