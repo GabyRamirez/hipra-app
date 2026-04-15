@@ -7,69 +7,75 @@ export async function POST(req: Request) {
     const { email, turnstileToken } = await req.json();
 
     if (!email || !turnstileToken) {
+      console.error('[API request-link] Dades incompletes: falta correu o token Turnstile.');
       return NextResponse.json({ message: 'Dades incompletes.' }, { status: 400 });
     }
 
-    // 1. Verify Turnstile (Cloudflare)
-    const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        secret: process.env.TURNSTILE_SECRET_KEY,
-        response: turnstileToken,
-      }),
-    });
-    const turnstileData = await turnstileRes.json();
-    if (!turnstileData.success) {
-      return NextResponse.json({ message: 'Verificació de seguretat fallida.' }, { status: 403 });
+    // 1. Verificar Cloudflare Turnstile
+    try {
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: process.env.TURNSTILE_SECRET_KEY,
+          response: turnstileToken,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        console.error('[API request-link] Error validació Turnstile:', verifyData);
+        return NextResponse.json({ message: 'Error de validació de seguretat.' }, { status: 400 });
+      }
+    } catch (err) {
+      console.error('[API request-link] Error de xarxa amb Turnstile:', err);
+      return NextResponse.json({ message: 'Error de connexió de seguretat.' }, { status: 500 });
     }
 
-    // 2. Find worker
-    const worker = await prisma.worker.findUnique({
-      where: { email: email.toLowerCase().trim() },
-    });
+    // 2. Cercar treballador al cens
+    try {
+      const worker = await prisma.worker.findUnique({
+        where: { email: email.toLowerCase().trim() },
+      });
 
-    if (!worker) {
-      return NextResponse.json({ message: 'Aquest correu no està autoritzat.' }, { status: 404 });
-    }
+      if (!worker) {
+        console.warn('[API request-link] Correu no trobat al cens:', email);
+        return NextResponse.json({ message: 'Aquest correu no figura al cens d\'Hipra.' }, { status: 404 });
+      }
 
-    // 3. Check if already answered
-    if (worker.hasAnswered) {
-      return NextResponse.json({ message: 'Aquest correu ja ha completat l\'enquesta.' }, { status: 403 });
-    }
+      if (worker.hasAnswered) {
+        console.warn('[API request-link] Treballador ja ha contestat:', email);
+        return NextResponse.json({ message: 'Aquest correu ja ha completat l\'enquesta.' }, { status: 403 });
+      }
 
-    // 4. Send email with Brevo
-    // Build the link
-    const surveyLink = `${process.env.NEXT_PUBLIC_BASE_URL}/survey/${worker.token}`;
-    
-    // We reuse the transactional email sending logic or call a function
-    // For now, I'll implement a basic send using Brevo API directly or Brevo SMTP via Nodemailer
-    // Let's use the Brevo library I copied, but it only has 'checkAndUnblockContact'
-    // I will add a sendSurveyEmail function to src/lib/brevo.ts
-    
-    const sendRes = await sendSurveyEmail(worker.email, worker.name || 'Treballador/a', surveyLink);
+      // 3. Enviar correu amb l'enllaç
+      const link = `${process.env.NEXT_PUBLIC_BASE_URL}/survey/${worker.token}`;
+      const emailStatus = await sendSurveyEmail(worker.email, worker.name || 'Treballador/a', link);
 
-    if (sendRes.success) {
-      return NextResponse.json({ message: 'Enllaç enviat correctament.' });
-    } else {
-      return NextResponse.json({ message: 'Error enviant el correu. Revisa la configuració.' }, { status: 500 });
+      if (!emailStatus.success) {
+        console.error('[API request-link] Error enviant el correu amb Brevo per a:', email);
+        return NextResponse.json({ message: 'Error enviant el correu. Revisa Brevo.' }, { status: 500 });
+      }
+
+      return NextResponse.json({ message: 'Correu enviat correctament.' });
+
+    } catch (err) {
+      console.error('[API request-link] Error de Base de Dades:', err);
+      return NextResponse.json({ message: 'Error intern del servidor. Comprova la BD.' }, { status: 500 });
     }
 
   } catch (error) {
-    console.error('[API Link Request Error]:', error);
+    console.error('[API request-link] Error general:', error);
     return NextResponse.json({ message: 'Error intern del servidor.' }, { status: 500 });
   }
 }
 
-// Minimal email sending helper (this would eventually go into src/lib/brevo.ts)
-async function sendSurveyEmail(email: string, name: string, link: string) {
+// Helper per enviar el mail individual
+async function sendSurveyEmail(emailTarget: string, name: string, link: string) {
   try {
-     // Generar QR en format Base64 per incrustar al mail
      const QRCode = require('qrcode');
      const qrDataUrl = await QRCode.toDataURL(link);
-
-     // Optional: check if blacklisted first (reusing existing lib)
-     await checkAndUnblockContact(email);
+     
+     await checkAndUnblockContact(emailTarget);
 
      const BREVO_API_KEY = process.env.BREVO_API_KEY;
      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -80,7 +86,7 @@ async function sendSurveyEmail(email: string, name: string, link: string) {
        },
        body: JSON.stringify({
          sender: { name: "La Intersindical", email: "no-reply@lainter.cat" },
-         to: [{ email, name }],
+         to: [{ email: emailTarget, name }],
          subject: "Avaluació de Lloc de Treball | Hipra",
          htmlContent: `
            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px; text-align: center;">
@@ -103,7 +109,8 @@ async function sendSurveyEmail(email: string, name: string, link: string) {
      });
 
      return { success: response.ok };
-  } catch (error) {
-    return { success: false, error };
+  } catch (err) {
+    console.error('[sendSurveyEmail Helper Error]:', err);
+    return { success: false };
   }
 }

@@ -59,7 +59,9 @@ export default function Home() {
       {/* Header */}
       <div className="mb-12 text-center animate-fade-in space-y-4">
         <div className="flex justify-center mb-6">
-           <Image src="/logo.png" alt="La Intersindical" width={180} height={60} priority className="drop-shadow-sm" />
+           <div className="bg-brand-navy p-4 rounded-2xl shadow-xl">
+              <Image src="/logo.png" alt="La Intersindical" width={180} height={60} priority className="brightness-0 invert h-auto w-auto" />
+           </div>
         </div>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-brand-navy">
           Valoració del <span className="text-brand-red">Lloc de Treball</span>
