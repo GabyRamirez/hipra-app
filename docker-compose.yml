@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hipra-app
+    restart: always
+    ports:
+      - "3002:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
