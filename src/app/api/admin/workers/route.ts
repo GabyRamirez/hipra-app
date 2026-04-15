@@ -5,7 +5,6 @@ import { generateSecureToken } from '@/lib/auth';
 export async function GET() {
   try {
     const workers = await prisma.worker.findMany({
-      include: { response: true },
       orderBy: { createdAt: 'desc' }
     });
     return NextResponse.json(workers);

@@ -5,7 +5,7 @@ import { surveyFactors, calculateProfessionalGroup } from '@/lib/survey-data';
 
 export async function POST(req: Request) {
   try {
-    const { token, answers } = await req.json();
+    const { token, answers, jobPosition } = await req.json();
 
     if (!token || !answers) {
       return NextResponse.json({ message: 'Dades incompletes.' }, { status: 400 });
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       data: {
         hasAnswered: true,
         gp: professionalGroup,
-        responses: { ...factorScores, totalScore, professionalGroup },
+        responses: { ...factorScores, totalScore, professionalGroup, jobPosition },
         answers: answers
       }
     });

@@ -20,6 +20,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   // Survey State
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [jobPosition, setJobPosition] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [results, setResults] = useState<any>(null);
@@ -48,7 +49,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   };
 
   const nextStep = () => {
-    if (currentStep < surveyFactors.length - 1) {
+    if (currentStep <= surveyFactors.length - 1) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
     }
@@ -72,7 +73,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       const res = await fetch('/api/survey/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, answers }),
+        body: JSON.stringify({ token, answers, jobPosition }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -140,7 +141,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   }
 
   const currentFactor = surveyFactors[currentStep];
-  const progress = ((currentStep + 1) / surveyFactors.length) * 100;
+  const progress = ((currentStep + 1) / (surveyFactors.length + 1)) * 100;
 
   return (
     <main className="min-h-screen pb-24 pt-8 px-4 bg-brand-bg relative">
@@ -148,10 +149,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <Image src="/logo.png" alt="Logo" width={100} height={34} />
-          <div className="text-right">
-            <p className="text-[10px] uppercase font-bold text-gray-400">Treballador/a</p>
-            <p className="text-sm font-bold text-brand-navy">{worker?.name || worker?.email}</p>
-          </div>
+          {/* Email removed intentionally per user request */}
         </div>
 
         {/* Progress Bar */}
@@ -164,38 +162,64 @@ export default function SurveyPage({ params }: SurveyPageProps) {
 
         {/* Question Card */}
         <div className="glass p-6 md:p-8 animate-fade-in shadow-xl border-white/40">
-           <p className="text-xs font-bold text-brand-red uppercase tracking-wider mb-2">
-             Factor {currentFactor.id} de {surveyFactors.length}
-           </p>
-           <h2 className="text-xl md:text-2xl font-bold text-brand-navy mb-4 leading-tight">
-             {currentFactor.question}
-           </h2>
-           {currentFactor.description && (
-             <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-               {currentFactor.description}
-             </p>
-           )}
+           {currentStep < surveyFactors.length ? (
+             <>
+               <p className="text-xs font-bold text-brand-red uppercase tracking-wider mb-2">
+                 Factor {currentFactor.id} de {surveyFactors.length}
+               </p>
+               <h2 className="text-xl md:text-2xl font-bold text-brand-navy mb-4 leading-tight">
+                 {currentFactor.question}
+               </h2>
+               {currentFactor.description && (
+                 <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                   {currentFactor.description}
+                 </p>
+               )}
 
-           <div className="space-y-3">
-             {currentFactor.grades.map((g) => (
-               <button
-                 key={g.grade}
-                 onClick={() => handleSelectGrade(currentFactor.id, g.grade)}
-                 className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${
-                   answers[currentFactor.id] === g.grade
-                     ? 'bg-brand-navy border-brand-navy text-white shadow-lg'
-                     : 'bg-white/60 border-white/20 hover:bg-white hover:border-brand-red/30 text-gray-700'
-                 }`}
-               >
-                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                    answers[currentFactor.id] === g.grade ? 'bg-brand-red text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-brand-red/10 group-hover:text-brand-red'
-                 }`}>
-                   {g.grade}
-                 </div>
-                 <span className="text-sm leading-snug">{g.label}</span>
-               </button>
-             ))}
-           </div>
+               <div className="space-y-3">
+                 {currentFactor.grades.map((g) => (
+                   <button
+                     key={g.grade}
+                     onClick={() => handleSelectGrade(currentFactor.id, g.grade)}
+                     className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-4 group ${
+                       answers[currentFactor.id] === g.grade
+                         ? 'bg-brand-navy border-brand-navy text-white shadow-lg'
+                         : 'bg-white/60 border-white/20 hover:bg-white hover:border-brand-red/30 text-gray-700'
+                     }`}
+                   >
+                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                        answers[currentFactor.id] === g.grade ? 'bg-brand-red text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-brand-red/10 group-hover:text-brand-red'
+                     }`}>
+                       {g.grade}
+                     </div>
+                     <span className="text-sm leading-snug">{g.label}</span>
+                   </button>
+                 ))}
+               </div>
+             </>
+           ) : (
+             <>
+               <p className="text-xs font-bold text-brand-red uppercase tracking-wider mb-2">
+                 Pas final
+               </p>
+               <h2 className="text-xl md:text-2xl font-bold text-brand-navy mb-4 leading-tight">
+                 Quin és el nom del teu lloc de treball actual?
+               </h2>
+               <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                 Aquesta informació ens ajudarà a analitzar detalladament les dades associades a cada tipus de responsabilitat.
+               </p>
+               <div className="space-y-2">
+                 <input
+                   type="text"
+                   required
+                   value={jobPosition}
+                   onChange={(e) => setJobPosition(e.target.value)}
+                   placeholder="Ex: Operari de planta, Tècnic de laboratori..."
+                   className="form-input w-full"
+                 />
+               </div>
+             </>
+           )}
         </div>
 
         {/* Navigation */}
@@ -210,10 +234,10 @@ export default function SurveyPage({ params }: SurveyPageProps) {
               </button>
             )}
             
-            {currentStep < surveyFactors.length - 1 ? (
+            {currentStep < surveyFactors.length ? (
               <button 
                 onClick={nextStep}
-                disabled={!answers[currentFactor.id]}
+                disabled={!answers[currentFactor?.id]}
                 className="flex-[2] btn-primary py-4 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-30"
               >
                 Següent <ArrowRight className="w-5 h-5" />
@@ -221,7 +245,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             ) : (
               <button 
                 onClick={submitSurvey}
-                disabled={!answers[currentFactor.id] || isSubmitting}
+                disabled={jobPosition.trim().length < 2 || isSubmitting}
                 className="flex-[2] btn-primary py-4 rounded-2xl flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-30"
               >
                 {isSubmitting ? (
