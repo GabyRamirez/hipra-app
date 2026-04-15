@@ -13,8 +13,7 @@ export function generateSecureToken(): string {
  */
 export async function validateWorkerToken(token: string) {
   const worker = await prisma.worker.findUnique({
-    where: { token },
-    include: { response: true }
+    where: { token }
   });
 
   if (!worker) {

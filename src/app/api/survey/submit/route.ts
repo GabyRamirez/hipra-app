@@ -42,31 +42,18 @@ export async function POST(req: Request) {
 
     const professionalGroup = calculateProfessionalGroup(totalScore);
 
-    // 4. Save in Database (Atomic Transaction)
-    const result = await prisma.$transaction(async (tx) => {
-      // Create response
-      const response = await tx.surveyResponse.create({
-        data: {
-          workerId: worker!.id,
-          ...factorScores as any,
-          totalScore,
-          professionalGroup,
-        }
-      });
-
-      // Mark worker as answered
-      await tx.worker.update({
-        where: { id: worker!.id },
-        data: {
-          hasAnswered: true,
-          answeredAt: new Date(),
-        }
-      });
-
-      return { professionalGroup, totalScore };
+    // 4. Save in Database 
+    const result = await prisma.worker.update({
+      where: { id: worker!.id },
+      data: {
+        hasAnswered: true,
+        gp: professionalGroup,
+        responses: { ...factorScores, totalScore, professionalGroup },
+        answers: answers
+      }
     });
 
-    return NextResponse.json({ results: result });
+    return NextResponse.json({ results: { professionalGroup, totalScore } });
 
   } catch (error) {
     console.error('[API Survey Submit Error]:', error);
