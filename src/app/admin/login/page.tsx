@@ -41,8 +41,8 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-brand-navy">
       <div className="w-full max-w-md z-10">
         <div className="text-center mb-10">
-          <div className="bg-white p-4 rounded-3xl inline-block mb-6 shadow-2xl">
-            <Image src="/logo.png" alt="La Intersindical" width={160} height={50} priority className="h-8 w-auto" />
+          <div className="inline-block mb-6 shadow-2xl rounded-xl overflow-hidden drop-shadow-xl">
+            <Image src="/logo.png" alt="La Intersindical" width={180} height={60} priority className="h-auto w-auto max-h-[80px]" />
           </div>
           <h1 className="text-3xl font-black text-white mb-2">Administració</h1>
           <p className="text-white/60">Sistema de gestió d'avaluacions TLC Hipra</p>

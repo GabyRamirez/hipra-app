@@ -148,7 +148,9 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <Image src="/logo.png" alt="Logo" width={100} height={34} />
+          <div className="drop-shadow-md rounded-md overflow-hidden flex-shrink-0">
+             <Image src="/logo.png" alt="Logo" width={120} height={40} className="w-auto h-8" />
+          </div>
           {/* Email removed intentionally per user request */}
         </div>
 
