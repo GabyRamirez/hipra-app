@@ -3,7 +3,7 @@ FROM node:22-alpine AS base
 
 # 1. Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json ./
 RUN npm install --legacy-peer-deps
