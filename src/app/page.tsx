@@ -49,6 +49,12 @@ export default function Home() {
       console.error(error);
       setStatus('error');
       setMessage('Error de connexió amb el servidor.');
+    } finally {
+      // Re-generem el token de Turnstile per si l'usuari vol tornar a provar
+      setTurnstileToken(null);
+      if (typeof window !== 'undefined' && (window as any).turnstile) {
+        (window as any).turnstile.reset();
+      }
     }
   };
 
