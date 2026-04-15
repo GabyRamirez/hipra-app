@@ -11,6 +11,7 @@ async function main() {
     { email: 'test1@okayako.com', name: 'Test One' },
     { email: 'test2@okayako.com', name: 'Test Two' },
     { email: 'test3@okayako.com', name: 'Test Three' },
+    { email: 'industria@intersindical-csc.cat', name: 'Indústria Intersindical' },
   ];
 
   for (const w of testWorkers) {
