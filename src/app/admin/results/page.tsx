@@ -19,7 +19,7 @@ export default function ResultsPage() {
       const res = await fetch('/api/admin/workers');
       const data = await res.json();
       // Only show workers who have answered
-      setWorkers(data.filter((w: any) => w.hasAnswered && w.response));
+      setWorkers(data.filter((w: any) => w.hasAnswered && w.responses));
     } catch (err) {
       console.error(err);
     } finally {
@@ -31,23 +31,24 @@ export default function ResultsPage() {
     const dataToExport = workers.map(w => ({
       'Nom': w.name || w.email,
       'Email': w.email,
-      'Grup Professional': w.response.professionalGroup,
-      'Punts Totals': w.response.totalScore,
-      'Factor 1': w.response.factor1,
-      'Factor 2': w.response.factor2,
-      'Factor 3': w.response.factor3,
-      'Factor 4': w.response.factor4,
-      'Factor 5': w.response.factor5,
-      'Factor 6': w.response.factor6,
-      'Factor 7': w.response.factor7,
-      'Factor 8': w.response.factor8,
-      'Factor 9': w.response.factor9,
-      'Factor 10': w.response.factor10,
-      'Factor 11': w.response.factor11,
-      'Factor 12': w.response.factor12,
-      'Factor 13': w.response.factor13,
-      'Factor 14': w.response.factor14,
-      'Factor 15': w.response.factor15,
+      'Lloc de Treball': w.responses?.jobPosition || '-',
+      'Grup Professional': w.responses?.professionalGroup || '-',
+      'Punts Totals': w.responses?.totalScore || 0,
+      'Factor 1': w.responses?.factor1 || 0,
+      'Factor 2': w.responses?.factor2 || 0,
+      'Factor 3': w.responses?.factor3 || 0,
+      'Factor 4': w.responses?.factor4 || 0,
+      'Factor 5': w.responses?.factor5 || 0,
+      'Factor 6': w.responses?.factor6 || 0,
+      'Factor 7': w.responses?.factor7 || 0,
+      'Factor 8': w.responses?.factor8 || 0,
+      'Factor 9': w.responses?.factor9 || 0,
+      'Factor 10': w.responses?.factor10 || 0,
+      'Factor 11': w.responses?.factor11 || 0,
+      'Factor 12': w.responses?.factor12 || 0,
+      'Factor 13': w.responses?.factor13 || 0,
+      'Factor 14': w.responses?.factor14 || 0,
+      'Factor 15': w.responses?.factor15 || 0,
       'Data Resposta': new Date(w.answeredAt).toLocaleString()
     }));
 
@@ -99,6 +100,7 @@ export default function ResultsPage() {
             <thead>
               <tr className="bg-brand-navy/5 text-brand-navy text-[11px] font-black uppercase tracking-widest">
                 <th className="px-6 py-4">Treballador</th>
+                <th className="px-6 py-4">Lloc de Treball</th>
                 <th className="px-6 py-4">Grup (GP)</th>
                 <th className="px-6 py-4">Punts Totals</th>
                 <th className="px-6 py-4 text-center">F1</th>
@@ -115,21 +117,24 @@ export default function ResultsPage() {
                     <p className="font-bold text-sm text-brand-navy">{worker.name || '-'}</p>
                     <p className="text-[10px] text-gray-400 font-medium uppercase">{worker.email}</p>
                   </td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-500">
+                    {worker.responses?.jobPosition || '-'}
+                  </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 rounded-lg bg-brand-navy text-white text-xs font-black">
-                      {worker.response.professionalGroup}
+                      {worker.responses?.professionalGroup || '-'} 
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                        <Calculator className="w-3 h-3 text-brand-red" />
-                       <span className="font-bold text-sm text-brand-navy">{worker.response.totalScore}</span>
+                       <span className="font-bold text-sm text-brand-navy">{worker.responses?.totalScore || 0}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.response.factor1}</td>
-                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.response.factor2}</td>
-                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.response.factor3}</td>
-                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.response.factor4}</td>
+                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.responses?.factor1 || 0}</td>
+                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.responses?.factor2 || 0}</td>
+                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.responses?.factor3 || 0}</td>
+                  <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.responses?.factor4 || 0}</td>
                   <td className="px-6 py-4 text-right text-[10px] text-gray-400 font-medium">
                     {new Date(worker.answeredAt).toLocaleDateString()}
                   </td>
