@@ -134,7 +134,12 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             </div>
           </div>
 
-          <p className="text-xs text-gray-400">Pots tancar aquesta finestra ara.</p>
+          <a 
+            href="https://laintersindical.cat/"
+            className="btn-primary w-full py-4 text-base font-bold bg-brand-navy hover:bg-brand-navy/90 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
+          >
+            Tornar al web principal <ArrowRight className="w-5 h-5" />
+          </a>
         </div>
       </div>
     );
