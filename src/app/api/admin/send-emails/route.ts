@@ -2,10 +2,16 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { checkAndUnblockContact } from '@/lib/brevo';
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    let workerId;
+    try {
+      const data = await req.json();
+      workerId = data.workerId;
+    } catch(e) {}
+
     const workers = await prisma.worker.findMany({
-      where: { hasAnswered: false },
+      where: workerId ? { id: workerId } : { hasAnswered: false },
     });
 
     if (workers.length === 0) {

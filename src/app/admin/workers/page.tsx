@@ -10,6 +10,10 @@ export default function WorkersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [sendLoading, setSendLoading] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newName, setNewName] = useState('');
+  const [isAddingSingle, setIsAddingSingle] = useState(false);
+  const [singleSendLoading, setSingleSendLoading] = useState<string | null>(null);
 
   useEffect(() => {
     fetchWorkers();
@@ -80,6 +84,48 @@ export default function WorkersPage() {
     }
   };
 
+  const handleAddSingle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail) return;
+    setIsAddingSingle(true);
+    try {
+      const res = await fetch('/api/admin/workers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([{ email: newEmail, name: newName }]),
+      });
+      if (res.ok) {
+        setNewEmail('');
+        setNewName('');
+        fetchWorkers();
+      } else {
+        alert("Error afegint el treballador.");
+      }
+    } catch (err) {
+      alert("Error de connexió.");
+    } finally {
+      setIsAddingSingle(false);
+    }
+  };
+
+  const sendSingleEmail = async (worker: any) => {
+    if (!confirm(`Vols enviar el correu a ${worker.email}?`)) return;
+    setSingleSendLoading(worker.id);
+    try {
+      const res = await fetch('/api/admin/send-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workerId: worker.id }),
+      });
+      const data = await res.json();
+      alert(data.message || "Acció completada");
+    } catch (err) {
+      alert("Error enviant correu.");
+    } finally {
+      setSingleSendLoading(null);
+    }
+  };
+
   const filteredWorkers = workers.filter(w => 
     w.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
     w.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -104,10 +150,25 @@ export default function WorkersPage() {
             className="btn-primary flex items-center gap-2 text-sm py-2"
           >
             {sendLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-            Enviar Invitacions
+            Emissió Massiva
           </button>
         </div>
       </div>
+
+      <form onSubmit={handleAddSingle} className="glass p-6 md:p-8 flex flex-col md:flex-row gap-4 items-end border-white/40 shadow-lg">
+        <div className="flex-1 w-full space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Nom del Treballador</label>
+          <input type="text" value={newName} onChange={e => setNewName(e.target.value)} placeholder="Ex: Maria Garcia" className="form-input" />
+        </div>
+        <div className="flex-1 w-full space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Correu (Obligatori)</label>
+          <input type="email" required value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Correu electrònic..." className="form-input" />
+        </div>
+        <button type="submit" disabled={!newEmail || isAddingSingle} className="btn-primary bg-brand-navy whitespace-nowrap h-[50px] flex items-center justify-center gap-2">
+          {isAddingSingle ? <RefreshCw className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
+          Afegir Individual
+        </button>
+      </form>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white/60 p-6 rounded-3xl border border-white shadow-sm">
@@ -148,6 +209,7 @@ export default function WorkersPage() {
                 <th className="px-6 py-4">Nom</th>
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">Estat</th>
+                <th className="px-6 py-4 text-center">Acció</th>
                 <th className="px-6 py-4 text-right">Data Resposta</th>
               </tr>
             </thead>
@@ -167,8 +229,18 @@ export default function WorkersPage() {
                       </span>
                     )}
                   </td>
+                  <td className="px-6 py-4 text-center">
+                    <button 
+                      onClick={() => sendSingleEmail(worker)}
+                      disabled={singleSendLoading === worker.id || worker.hasAnswered}
+                      title="Enviar enllaç personal"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-navy/10 text-brand-navy hover:bg-brand-red hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      {singleSendLoading === worker.id ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                    </button>
+                  </td>
                   <td className="px-6 py-4 text-right text-xs text-gray-400 font-mono">
-                    {worker.answeredAt ? new Date(worker.answeredAt).toLocaleString() : '-'}
+                    {worker.hasAnswered ? new Date(worker.updatedAt).toLocaleDateString() : '-'}
                   </td>
                 </tr>
               ))}

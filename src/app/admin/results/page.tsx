@@ -49,7 +49,7 @@ export default function ResultsPage() {
       'Factor 13': w.responses?.factor13 || 0,
       'Factor 14': w.responses?.factor14 || 0,
       'Factor 15': w.responses?.factor15 || 0,
-      'Data Resposta': new Date(w.answeredAt).toLocaleString()
+      'Data Resposta': new Date(w.updatedAt).toLocaleString()
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -136,7 +136,7 @@ export default function ResultsPage() {
                   <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.responses?.factor3 || 0}</td>
                   <td className="px-6 py-4 text-center text-xs font-mono text-gray-400">{worker.responses?.factor4 || 0}</td>
                   <td className="px-6 py-4 text-right text-[10px] text-gray-400 font-medium">
-                    {new Date(worker.answeredAt).toLocaleDateString()}
+                    {new Date(worker.updatedAt).toLocaleDateString()}
                   </td>
                 </tr>
               ))}
